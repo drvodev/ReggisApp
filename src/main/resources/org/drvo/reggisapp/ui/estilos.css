@@ -1,0 +1,106 @@
+.root {
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #f5f7fb;
+    -fx-text-fill: #182230;
+}
+
+.app-root { -fx-background-color: #f5f7fb; }
+.top-bar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent #e6eaf0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+.brand-mark {
+    -fx-background-color: #1769d2;
+    -fx-background-radius: 11;
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-alignment: center;
+    -fx-min-width: 38px;
+    -fx-min-height: 38px;
+}
+.brand-name { -fx-font-size: 17px; -fx-font-weight: 700; -fx-text-fill: #16243a; }
+.preview-badge {
+    -fx-background-color: #edf4ff;
+    -fx-background-radius: 20;
+    -fx-padding: 8 12;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2863a9;
+}
+.page { -fx-background-color: #f5f7fb; }
+.page-scroll, .page-scroll > .viewport { -fx-background-color: #f5f7fb; }
+.page-scroll { -fx-background-insets: 0; -fx-padding: 0; -fx-border-color: transparent; }
+.page-title { -fx-font-size: 29px; -fx-font-weight: 700; -fx-text-fill: #17263c; }
+.page-subtitle { -fx-font-size: 14px; -fx-text-fill: #6b7789; }
+.section-label { -fx-font-size: 12px; -fx-font-weight: 700; -fx-text-fill: #697789; }
+.action-card {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: #e7ebf1;
+    -fx-border-radius: 14;
+}
+.action-number {
+    -fx-text-fill: #1769d2;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-background-color: #edf4ff;
+    -fx-background-radius: 10;
+    -fx-min-width: 36px;
+    -fx-min-height: 36px;
+    -fx-alignment: center;
+}
+.action-title { -fx-font-size: 15px; -fx-font-weight: 700; -fx-text-fill: #1c2b40; }
+.action-description { -fx-font-size: 12px; -fx-text-fill: #738094; }
+.button-primary, .button-secondary, .button-danger, .button-link {
+    -fx-cursor: hand;
+    -fx-background-radius: 9;
+    -fx-padding: 10 16;
+    -fx-font-weight: 700;
+}
+.button-primary { -fx-background-color: #1769d2; -fx-text-fill: white; }
+.button-primary:hover { -fx-background-color: #0f58b8; }
+.button-secondary { -fx-background-color: #eaf2fc; -fx-text-fill: #1559aa; }
+.button-secondary:hover { -fx-background-color: #dceafb; }
+.button-danger { -fx-background-color: #fff0f0; -fx-text-fill: #bd3030; }
+.button-danger:hover { -fx-background-color: #ffe0e0; }
+.button-link { -fx-background-color: transparent; -fx-text-fill: #52647a; }
+.button-link:hover { -fx-background-color: #e9edf4; }
+.data-table, .list-view {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #e5eaf1;
+    -fx-border-radius: 12;
+    -fx-padding: 8;
+}
+.table-view .column-header-background { -fx-background-color: #f7f9fc; }
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: #f7f9fc;
+    -fx-size: 42px;
+    -fx-border-color: transparent transparent #e9edf3 transparent;
+}
+.table-view .column-header .label { -fx-text-fill: #697789; -fx-font-size: 12px; -fx-font-weight: 700; }
+.table-row-cell { -fx-cell-size: 48px; -fx-background-color: white; -fx-border-color: transparent transparent #f0f2f6 transparent; }
+.table-row-cell:selected { -fx-background-color: #e9f2ff; -fx-text-background-color: #183b66; }
+.order-row {
+    -fx-padding: 18 14;
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: #e8edf3;
+    -fx-border-radius: 10;
+}
+.order-number {
+    -fx-background-color: #eef4fb;
+    -fx-background-radius: 9;
+    -fx-padding: 10;
+    -fx-text-fill: #416181;
+    -fx-font-weight: 700;
+}
+.order-title { -fx-font-size: 14px; -fx-font-weight: 700; -fx-text-fill: #223148; }
+.order-amount { -fx-font-size: 12px; -fx-text-fill: #6b7789; }
+.footer-label { -fx-font-size: 11px; -fx-text-fill: #8792a1; }
+.dialog-pane { -fx-background-color: #ffffff; }
+.dialog-pane .header-panel { -fx-background-color: #f7f9fc; }
+.text-field { -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d9e0e9; -fx-padding: 9 11; }
