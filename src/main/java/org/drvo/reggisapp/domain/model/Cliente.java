@@ -27,6 +27,9 @@ public class Cliente {
     }
 
     public static Cliente nuevo(String nombre) { return new Cliente(null, nombre); }
+    public static Cliente nuevo(String nombre, Map<String, String> datosAdicionales) {
+        return new Cliente(null, nombre, EstadoCliente.ACTIVO, datosAdicionales);
+    }
     public Long getId() { return id; }
     public String getNombre() { return nombre; }
     public EstadoCliente getEstado() { return estado; }

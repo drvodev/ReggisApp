@@ -9,6 +9,8 @@ import org.drvo.reggisapp.domain.service.ReporteServiceImpl;
 import org.drvo.reggisapp.domain.service.TasaCambioManualService;
 import org.drvo.reggisapp.domain.service.TiempoService;
 import org.drvo.reggisapp.domain.service.TiempoServiceImpl;
+import org.drvo.reggisapp.report.ExcelReportExporter;
+import org.drvo.reggisapp.report.XlsReportExporter;
 import org.drvo.reggisapp.repository.CampoClienteRepository;
 import org.drvo.reggisapp.repository.ClienteRepository;
 import org.drvo.reggisapp.repository.HistorialRepository;
@@ -31,6 +33,7 @@ public final class AppServices {
     private final TiempoService tiempoService;
     private final ReporteService reporteService;
     private final HistorialRepository historialRepository;
+    private final ExcelReportExporter excelReportExporter = new XlsReportExporter();
 
     public AppServices() {
         this(new DatabaseConfig());
@@ -60,4 +63,5 @@ public final class AppServices {
     public TiempoService tiempoService() { return tiempoService; }
     public ReporteService reporteService() { return reporteService; }
     public HistorialRepository historialRepository() { return historialRepository; }
+    public ExcelReportExporter excelReportExporter() { return excelReportExporter; }
 }

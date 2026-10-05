@@ -1,37 +1,60 @@
-# ReggisApp
+# Reggis 1.0.0
 
-Aplicación desktop preliminar para registrar clientes, pedidos, pagos e historial de cobranza. La interfaz está construida con JavaFX y la persistencia local usa SQLite por JDBC.
+Reggis es una aplicación de escritorio para organizar clientes, pedidos y cobros. Permite registrar pagos parciales o completos, conservar el historial de cada operación y consultar cuánto tarda cada cliente en abonar y cancelar un pedido. La interfaz está hecha con JavaFX y los datos se guardan localmente en SQLite.
+
+## Funciones
+
+- **Clientes:** nombre y RIF obligatorios; correo, teléfono y dirección opcionales. Cada cliente puede tener varios pedidos.
+- **Pedidos:** descripción, monto, moneda original y tasa de cambio ingresada manualmente. El saldo contable se registra en bolívares (BS).
+- **Pagos:** abonos parciales o totales en BS o USD. Cada pago guarda la fecha, el importe original, su equivalente en BS y la tasa aplicada.
+- **Seguimiento:** consulta de pagos, historial, promedio de días entre pagos, días hasta el primer pago y duración total de la deuda.
+- **Reportes Excel `.xls`:** exporta todos los pedidos y pagos de un cliente, o exporta el pedido seleccionado con sus pagos y métricas.
+- **Trazabilidad:** el historial de pagos, cierres y anulaciones se conserva; las anulaciones requieren motivo y resolución.
 
 ## Requisitos
 
 - JDK 25
-- Maven (incluido en IntelliJ IDEA o Maven 3.9+)
-- Windows para generar el instalador `.exe`
+- Maven 3.9+ o el Maven incluido con IntelliJ IDEA
+- Windows x64 y WiX Toolset para crear el instalador `.exe`
 
-## Ejecutar en IntelliJ
+## Ejecutar la aplicación
 
-Abre `pom.xml` como proyecto Maven y ejecuta `javafx:run` desde la ventana Maven. Desde PowerShell, en la raíz del proyecto:
+En IntelliJ IDEA, abre `pom.xml` como proyecto Maven y ejecuta `javafx:run` desde la ventana Maven. También puedes hacerlo desde PowerShell, en la carpeta del proyecto:
 
 ```powershell
 mvn javafx:run
 ```
 
-La base de datos se crea bajo `%LOCALAPPDATA%\ReggisApp\reggisapp.db` (o `~/.reggisapp` como alternativa). No se guarda junto al ejecutable, por lo que puede mantenerse al instalar una versión nueva.
+La ventana principal de Reggis permite registrar un cliente o abrir la lista de clientes. En la lista, haz doble clic sobre un cliente para consultar sus pedidos; también puedes seleccionarlo y usar **Ver pedidos**. En la ficha del cliente puedes crear pedidos, registrar pagos, revisar el historial y exportar reportes `.xls`. La acción **Eliminar cliente** está disponible únicamente en esa ficha y conserva el historial del cliente.
+
+## Datos locales
+
+SQLite crea la base de datos en `%LOCALAPPDATA%\ReggisApp\reggisapp.db`; si Windows no define esa variable, utiliza `~/.reggisapp/reggisapp.db`. La carpeta de datos conserva el nombre técnico anterior para mantener las bases de datos locales existentes. El archivo no se guarda dentro de la instalación de Reggis.
+
+Antes de reinstalar o mover el programa, conserva una copia de ese archivo. Las versiones del esquema se controlan con `PRAGMA user_version`.
 
 ## Pruebas
 
+Ejecuta la suite con:
+
 ```powershell
-mvn test
+mvn clean verify
 ```
 
-JUnit y Mockito cubren las reglas de servicios; las pruebas de interfaz ejecutan JavaFX y verifican controles, estilos y valores de la tabla. Las pruebas SQLite usan bases temporales e incluyen intentos de inyección SQL, persistencia literal de texto y rollback transaccional.
+JUnit y Mockito cubren las reglas de clientes, pedidos, pagos, conversión y tiempo. Las pruebas de interfaz verifican botones, navegación y carga de clientes. Las pruebas SQLite revisan persistencia, transacciones y entradas de inyección SQL. Las pruebas del exportador abren los archivos `.xls` generados y comprueban sus datos.
 
-## Diseño
+## Generar el instalador `.exe`
 
-El código separa presentación (`ui`), servicios de negocio (`domain.service`), modelos (`domain.model`) y contratos de persistencia (`repository`). `AppServices` configura SQLite y compone las dependencias. Los repositorios JDBC usan `PreparedStatement`; los servicios agrupan operaciones relacionadas en transacciones. Los importes contables se manejan como `BigDecimal` en BS, preservando la moneda y tasa originales por operación.
+Desde PowerShell, en la raíz del proyecto:
 
-Ver [arquitectura](docs/arquitectura.md), [estructura](docs/estructura.md) e [instalador y versiones](docs/instalador-y-versiones.md).
+```powershell
+./scripts/crear-instalador-windows.ps1
+```
 
-## Alcance de esta versión
+Se genera `dist/Reggis-1.0.0.exe` con el icono de la aplicación (una “R” blanca sobre fondo azul). El equipo que lo construya necesita JDK 25, Maven y WiX Toolset. La guía de [instalación y versionado](docs/instalador-y-versiones.md) describe la actualización de versiones.
 
-Incluye clientes, pedidos, pagos, conversión manual de moneda, historial local y cálculos de tiempo. Los reportes XLSX y reportes mensuales siguen pendientes. La interfaz es una primera versión y no sustituye todavía una revisión de aceptación en el puesto final.
+## Estructura y diseño
+
+El código separa presentación (`ui`), casos de uso (`domain.service`), modelos (`domain.model`) y persistencia (`repository`). `AppServices` compone SQLite, repositorios y servicios. Los importes se calculan con `BigDecimal`; los repositorios usan sentencias parametrizadas. Consulta la [arquitectura](docs/arquitectura.md), la [estructura del proyecto](docs/estructura.md) y el [registro de cambios](CHANGELOG.md) para ver las reglas, responsabilidades e historia de versiones.
+
+La versión 1.0 incluye la gestión local de clientes, pedidos, pagos, historial y reportes individuales `.xls`. Los reportes mensuales y la actualización automática de la aplicación están previstos para futuras versiones.

@@ -11,6 +11,7 @@ import org.drvo.reggisapp.repository.HistorialRepository;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -37,13 +38,15 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public Cliente crear(String nombre) {
-        return transactionBoundary.inTransaction(() -> crearEnTransaccion(nombre));
+    public Cliente crear(String nombre, Map<String, String> datosAdicionales) {
+        return transactionBoundary.inTransaction(() -> crearEnTransaccion(nombre, datosAdicionales));
     }
 
-    private Cliente crearEnTransaccion(String nombre) {
+    private Cliente crearEnTransaccion(String nombre, Map<String, String> datosAdicionales) {
         validarNombre(nombre);
-        Cliente guardado = clienteRepository.guardar(Cliente.nuevo(nombre));
+        Map<String, String> datos = normalizarDatos(datosAdicionales);
+        validarRif(datos);
+        Cliente guardado = clienteRepository.guardar(Cliente.nuevo(nombre, datos));
         if (guardado == null || guardado.getId() == null) {
             throw new ReglaNegocioException("No se pudo guardar el cliente con un identificador válido.");
         }
@@ -60,10 +63,13 @@ public class ClienteServiceImpl implements ClienteService {
     private Cliente actualizarEnTransaccion(Long clienteId, String nombre, Map<String, String> datosAdicionales) {
         validarId(clienteId);
         validarNombre(nombre);
+        Map<String, String> datos = datosAdicionales == null
+                ? Map.of() : normalizarDatos(datosAdicionales);
+        if (datosAdicionales != null) validarRif(datos);
         Cliente actual = clienteRepository.buscarPorId(clienteId)
                 .orElseThrow(() -> new ReglaNegocioException("No se encontró el cliente."));
         Cliente actualizado = actual.renombrar(nombre).conDatosAdicionales(
-                datosAdicionales == null ? actual.getDatosAdicionales() : datosAdicionales);
+                datosAdicionales == null ? actual.getDatosAdicionales() : datos);
         Cliente guardado = clienteRepository.actualizar(actualizado);
         historialRepository.guardar(new RegistroHistorial(null, "CLIENTE", clienteId,
                 "CLIENTE_ACTUALIZADO", LocalDateTime.now(clock), null, null, null));
@@ -118,6 +124,22 @@ public class ClienteServiceImpl implements ClienteService {
 
     private void validarNombre(String nombre) {
         if (nombre == null || nombre.isBlank()) throw new ReglaNegocioException("El nombre del cliente es obligatorio.");
+    }
+
+    private Map<String, String> normalizarDatos(Map<String, String> datos) {
+        Map<String, String> normalizados = new LinkedHashMap<>();
+        if (datos != null) datos.forEach((clave, valor) -> {
+            if (clave != null && !clave.isBlank() && valor != null && !valor.isBlank()) {
+                normalizados.put(clave.trim().toLowerCase(), valor.trim());
+            }
+        });
+        return normalizados;
+    }
+
+    private void validarRif(Map<String, String> datos) {
+        if (datos.get("rif") == null || datos.get("rif").isBlank()) {
+            throw new ReglaNegocioException("El RIF del cliente es obligatorio.");
+        }
     }
 
     private void validarId(Long id) {

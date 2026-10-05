@@ -31,6 +31,10 @@ if (-not $jpackage -or -not (Test-Path -LiteralPath $jpackage)) {
 
 $inputDir = Join-Path $projectRoot "target\installer-input"
 $outputDir = Join-Path $projectRoot "dist"
+$icon = Join-Path $projectRoot "src\main\resources\org\drvo\reggisapp\ui\reggis.ico"
+if (-not (Test-Path -LiteralPath $icon)) {
+    throw "No se encontró el icono de Reggis: $icon"
+}
 New-Item -ItemType Directory -Force -Path $inputDir, $outputDir | Out-Null
 Get-ChildItem -LiteralPath $inputDir -File | Remove-Item -Force
 
@@ -53,10 +57,11 @@ try {
         "--type", "exe",
         "--input", $inputDir,
         "--dest", $outputDir,
-        "--name", "ReggisApp",
+        "--name", "Reggis",
         "--app-version", $appVersion,
         "--vendor", "DRVO",
         "--description", "Registro local de clientes, pedidos y pagos",
+        "--icon", $icon,
         "--main-jar", $mainJar,
         "--main-class", "org.drvo.reggisapp.ReggisApp",
         "--win-per-user-install",
@@ -68,7 +73,7 @@ try {
     & $jpackage @jpackageArgs
     if ($LASTEXITCODE -ne 0) { throw "jpackage no pudo generar el instalador. Revisa que WiX Toolset esté instalado." }
 
-    Write-Host "Instalador generado en: $(Join-Path $outputDir "ReggisApp-$appVersion.exe")"
+    Write-Host "Instalador generado en: $(Join-Path $outputDir "Reggis-$appVersion.exe")"
 } finally {
     Pop-Location
 }

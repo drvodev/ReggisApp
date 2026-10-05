@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ClienteService {
-    Cliente crear(String nombre);
+    Cliente crear(String nombre, Map<String, String> datosAdicionales);
     Cliente actualizar(Long clienteId, String nombre, Map<String, String> datosAdicionales);
     Cliente inactivar(Long clienteId);
     List<Cliente> listarActivos();

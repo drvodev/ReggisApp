@@ -43,13 +43,15 @@ class ClienteServiceTest {
         when(clienteRepository.guardar(any(Cliente.class))).thenAnswer(invocation ->
                 ((Cliente) invocation.getArgument(0)).conId(8L));
 
-        Cliente cliente = service.crear("  Ana Pérez  ");
+        Cliente cliente = service.crear("  Ana Pérez  ", Map.of("rif", "J-123"));
 
         assertEquals(8L, cliente.getId());
         assertEquals("Ana Pérez", cliente.getNombre());
         assertEquals(EstadoCliente.ACTIVO, cliente.getEstado());
+        assertEquals("J-123", cliente.getDatosAdicionales().get("rif"));
         verify(historialRepository).guardar(any());
-        assertThrows(ReglaNegocioException.class, () -> service.crear(" "));
+        assertThrows(ReglaNegocioException.class, () -> service.crear(" ", Map.of("rif", "J-123")));
+        assertThrows(ReglaNegocioException.class, () -> service.crear("Ana", Map.of("email", "ana@example.com")));
     }
 
     @Test

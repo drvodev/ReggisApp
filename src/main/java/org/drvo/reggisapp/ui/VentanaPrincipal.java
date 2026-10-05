@@ -15,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -25,6 +26,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.scene.control.ScrollPane;
 import javafx.beans.property.SimpleStringProperty;
 import org.drvo.reggisapp.domain.model.Cliente;
@@ -39,11 +41,19 @@ import org.drvo.reggisapp.domain.service.CobranzaService;
 import org.drvo.reggisapp.domain.service.ClienteService;
 import org.drvo.reggisapp.domain.service.TiempoService;
 import org.drvo.reggisapp.repository.HistorialRepository;
+import org.drvo.reggisapp.report.ExcelReportExporter;
+import org.drvo.reggisapp.report.ReportePedido;
+import org.drvo.reggisapp.report.XlsReportExporter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /** Vistas JavaFX de clientes, pedidos, pagos y seguimiento. */
 public class VentanaPrincipal {
@@ -54,13 +64,21 @@ public class VentanaPrincipal {
     private final CobranzaService cobranzaService;
     private final TiempoService tiempoService;
     private final HistorialRepository historialRepository;
+    private final ExcelReportExporter excelReportExporter;
 
     public VentanaPrincipal(ClienteService clienteService, CobranzaService cobranzaService,
                             TiempoService tiempoService, HistorialRepository historialRepository) {
+        this(clienteService, cobranzaService, tiempoService, historialRepository, new XlsReportExporter());
+    }
+
+    public VentanaPrincipal(ClienteService clienteService, CobranzaService cobranzaService,
+                            TiempoService tiempoService, HistorialRepository historialRepository,
+                            ExcelReportExporter excelReportExporter) {
         this.clienteService = clienteService;
         this.cobranzaService = cobranzaService;
         this.tiempoService = tiempoService;
         this.historialRepository = historialRepository;
+        this.excelReportExporter = excelReportExporter;
         root.getStyleClass().add("app-root");
         root.setTop(crearBarraSuperior());
         root.setCenter(contenido);
@@ -73,7 +91,7 @@ public class VentanaPrincipal {
     private HBox crearBarraSuperior() {
         Label marca = new Label("R");
         marca.getStyleClass().add("brand-mark");
-        Label nombre = new Label("ReggisApp");
+        Label nombre = new Label("Reggis");
         nombre.getStyleClass().add("brand-name");
         HBox marcaCompleta = new HBox(11, marca, nombre);
         marcaCompleta.setAlignment(Pos.CENTER_LEFT);
@@ -97,7 +115,7 @@ public class VentanaPrincipal {
 
     private void mostrarInicio() {
         List<Cliente> activos = clienteService.listarActivos();
-        Label saludo = new Label("Hola, bienvenido a ReggisApp");
+        Label saludo = new Label("Hola, bienvenido a Reggis");
         saludo.getStyleClass().add("page-title");
         Label descripcion = new Label("Administra clientes, pedidos y pagos desde un solo lugar.");
         descripcion.getStyleClass().add("page-subtitle");
@@ -113,26 +131,16 @@ public class VentanaPrincipal {
         encabezado.setPadding(new Insets(0, 0, 26, 0));
 
         Button registrar = boton("Registrar cliente", "button-primary", this::registrarCliente);
-        Button estado = boton("Ver estado de clientes", "button-secondary", this::mostrarClientes);
         Button ver = boton("Ver clientes", "button-secondary", this::mostrarClientes);
-        Button eliminar = boton("Eliminar cliente", "button-danger", this::mostrarClientes);
         registrar.setMaxWidth(Double.MAX_VALUE);
-        estado.setMaxWidth(Double.MAX_VALUE);
         ver.setMaxWidth(Double.MAX_VALUE);
-        eliminar.setMaxWidth(Double.MAX_VALUE);
 
         VBox acciones = new VBox(14,
                 crearTarjetaAccion("01", "Registrar cliente", "Añade una persona o negocio a tu lista.", registrar),
-                crearTarjetaAccion("02", "Ver estado de clientes", "Consulta clientes y pedidos activos.", estado),
-                crearTarjetaAccion("03", "Ver clientes", "Abre un cliente para administrar sus pedidos.", ver));
+                crearTarjetaAccion("02", "Ver clientes", "Busca un cliente para ver y administrar sus pedidos.", ver));
         acciones.setMaxWidth(640);
-        Label grupoEliminar = new Label("Acción de seguridad");
-        grupoEliminar.getStyleClass().add("section-label");
-        VBox pieAcciones = new VBox(10, grupoEliminar, eliminar);
-        pieAcciones.setPadding(new Insets(18, 0, 0, 0));
-        pieAcciones.setMaxWidth(640);
 
-        VBox vista = new VBox(0, encabezado, acciones, pieAcciones);
+        VBox vista = new VBox(0, encabezado, acciones);
         vista.setPadding(new Insets(46, 36, 42, 72));
         vista.getStyleClass().add("page");
         mostrarVista(vista);
@@ -157,7 +165,7 @@ public class VentanaPrincipal {
     private void mostrarClientes() {
         Label titulo = new Label("Clientes");
         titulo.getStyleClass().add("page-title");
-        Label subtitulo = new Label("Selecciona un cliente para consultar sus pedidos y estado.");
+        Label subtitulo = new Label("Haz doble clic en un cliente para abrir sus pedidos, o selecciónalo y usa Ver pedidos.");
         subtitulo.getStyleClass().add("page-subtitle");
 
         ObservableList<Cliente> filas = FXCollections.observableArrayList(clienteService.listarTodos());
@@ -166,8 +174,14 @@ public class VentanaPrincipal {
         tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         tabla.getStyleClass().add("data-table");
         tabla.getColumns().addAll(List.of(
-                columnaCliente("Cliente", Cliente::getNombre, 0.72),
-                columnaCliente("Estado", cliente -> cliente.getEstado() == EstadoCliente.ACTIVO ? "Activo" : "Inactivo", 0.28)));
+                columnaCliente("Cliente", Cliente::getNombre, 0.5),
+                columnaCliente("RIF", cliente -> cliente.getDatosAdicionales().getOrDefault("rif", ""), 0.28),
+                columnaCliente("Estado", cliente -> cliente.getEstado() == EstadoCliente.ACTIVO ? "Activo" : "Inactivo", 0.22)));
+        tabla.setRowFactory(vistaTabla -> {
+            TableRow<Cliente> fila = new TableRow<>();
+            fila.setOnMouseClicked(evento -> abrirClientePorDobleClic(fila.getItem(), evento.getClickCount()));
+            return fila;
+        });
         VBox.setVgrow(tabla, Priority.ALWAYS);
 
         Button abrir = boton("Ver pedidos", "button-primary", () -> {
@@ -180,14 +194,8 @@ public class VentanaPrincipal {
             if (seleccionado == null) mostrarAviso("Selecciona un cliente para modificar.");
             else modificarCliente(seleccionado);
         });
-        Button eliminar = boton("Eliminar cliente", "button-danger", () -> {
-            Cliente seleccionado = tabla.getSelectionModel().getSelectedItem();
-            if (seleccionado == null) mostrarAviso("Selecciona un cliente para retirar de la lista activa.");
-            else if (seleccionado.getEstado() == EstadoCliente.INACTIVO) mostrarAviso("El cliente ya está inactivo.");
-            else inactivarCliente(seleccionado);
-        });
         Button volver = boton("Volver al inicio", "button-link", this::mostrarInicio);
-        HBox acciones = new HBox(10, abrir, modificar, eliminar, crearEspaciador(), volver);
+        HBox acciones = new HBox(10, abrir, modificar, crearEspaciador(), volver);
         acciones.setAlignment(Pos.CENTER_LEFT);
         VBox vista = new VBox(18, titulo, subtitulo, tabla, acciones);
         vista.setPadding(new Insets(50, 64, 42, 64));
@@ -247,17 +255,38 @@ public class VentanaPrincipal {
             if (seleccionado == null) mostrarAviso("Selecciona un pedido para anular.");
             else anularPedido(cliente, seleccionado);
         });
+        Button exportarCliente = boton("Exportar cliente (.xls)", "button-secondary", () -> exportarCliente(cliente));
+        Button exportarPedido = boton("Exportar pedido (.xls)", "button-secondary", () -> {
+            Pedido seleccionado = tablaPedidos.getSelectionModel().getSelectedItem();
+            if (seleccionado == null) mostrarAviso("Selecciona un pedido para exportarlo.");
+            else exportarPedido(cliente, seleccionado);
+        });
+        exportarPedido.setDisable(true);
+        tablaPedidos.getSelectionModel().selectedItemProperty().addListener((observable, anterior, seleccionado) ->
+                exportarPedido.setDisable(seleccionado == null));
+        Button eliminarCliente = boton("Eliminar cliente", "button-danger", () -> inactivarCliente(cliente));
+        eliminarCliente.setDisable(cliente.getEstado() != EstadoCliente.ACTIVO);
         Button volver = boton("Volver a clientes", "button-link", this::mostrarClientes);
         HBox acciones = new HBox(10, nuevo, pago, anular, crearEspaciador(), volver);
         acciones.setAlignment(Pos.CENTER_LEFT);
+        HBox exportaciones = new HBox(10, exportarCliente, exportarPedido);
+        exportaciones.setAlignment(Pos.CENTER_LEFT);
+        Label descripcionEliminar = new Label("Retira este cliente de la lista activa; sus pedidos e historial se conservan.");
+        descripcionEliminar.getStyleClass().add("page-subtitle");
+        VBox accionesCliente = new VBox(8, tituloSeccion("Acción del cliente"),
+                new HBox(12, eliminarCliente, descripcionEliminar));
 
         Label pagosTitulo = tituloSeccion("Pagos registrados");
         Label historialTitulo = tituloSeccion("Historial del pedido");
-        VBox vista = new VBox(14, titulo, subtitulo, tablaPedidos, acciones,
+        VBox vista = new VBox(14, titulo, subtitulo, tablaPedidos, acciones, exportaciones, accionesCliente,
                 pagosTitulo, tablaPagos, resumenTiempo, historialTitulo, historial);
         vista.setPadding(new Insets(42, 64, 42, 64));
         vista.getStyleClass().add("page");
         mostrarVista(vista);
+    }
+
+    void abrirClientePorDobleClic(Cliente cliente, int cantidadClics) {
+        if (cantidadClics == 2 && cliente != null) mostrarPedidos(cliente);
     }
 
     private void actualizarDetallePedido(Pedido pedido, TableView<Pago> tablaPagos,
@@ -287,26 +316,103 @@ public class VentanaPrincipal {
     private void registrarCliente() {
         TextField nombre = new TextField();
         nombre.setPromptText("Ej. Panadería HP");
-        Dialog<String> dialogo = dialogoSimple("Registrar cliente", "Ingresa el nombre del cliente", nombre, "Registrar");
-        dialogo.setResultConverter(boton -> boton.getButtonData() == ButtonBar.ButtonData.OK_DONE
-                ? nombre.getText().trim() : null);
-        dialogo.showAndWait().filter(nombreIngresado -> !nombreIngresado.isBlank()).ifPresent(nombreIngresado ->
+        TextField rif = new TextField();
+        rif.setPromptText("Obligatorio");
+        TextField email = new TextField();
+        email.setPromptText("Opcional");
+        TextField telefono = new TextField();
+        telefono.setPromptText("Opcional");
+        TextField direccion = new TextField();
+        direccion.setPromptText("Opcional");
+        Dialog<ButtonType> dialogo = dialogoFormulario("Registrar cliente", formulario(
+                new String[]{"Nombre *", "RIF *", "Correo", "Teléfono", "Dirección"},
+                new javafx.scene.Node[]{nombre, rif, email, telefono, direccion}), "Registrar");
+        dialogo.showAndWait().filter(tipo -> tipo.getButtonData() == ButtonBar.ButtonData.OK_DONE).ifPresent(tipo ->
                 ejecutarSeguro(() -> {
-                    clienteService.crear(nombreIngresado);
+                    clienteService.crear(nombre.getText(), datosContacto(rif, email, telefono, direccion));
                     mostrarClientes();
                 }));
     }
 
     private void modificarCliente(Cliente cliente) {
         TextField nombre = new TextField(cliente.getNombre());
-        Dialog<String> dialogo = dialogoSimple("Modificar cliente", "Actualiza el nombre", nombre, "Guardar");
-        dialogo.setResultConverter(boton -> boton.getButtonData() == ButtonBar.ButtonData.OK_DONE
-                ? nombre.getText().trim() : null);
-        dialogo.showAndWait().filter(nombreIngresado -> !nombreIngresado.isBlank()).ifPresent(nombreIngresado ->
+        TextField rif = campo(cliente, "rif");
+        TextField email = campo(cliente, "email");
+        TextField telefono = campo(cliente, "telefono");
+        TextField direccion = campo(cliente, "direccion");
+        Dialog<ButtonType> dialogo = dialogoFormulario("Modificar cliente", formulario(
+                new String[]{"Nombre *", "RIF *", "Correo", "Teléfono", "Dirección"},
+                new javafx.scene.Node[]{nombre, rif, email, telefono, direccion}), "Guardar");
+        dialogo.showAndWait().filter(tipo -> tipo.getButtonData() == ButtonBar.ButtonData.OK_DONE).ifPresent(tipo ->
                 ejecutarSeguro(() -> {
-                    clienteService.actualizar(cliente.getId(), nombreIngresado, cliente.getDatosAdicionales());
+                    clienteService.actualizar(cliente.getId(), nombre.getText(), datosContacto(rif, email, telefono, direccion));
                     mostrarClientes();
                 }));
+    }
+
+    private TextField campo(Cliente cliente, String clave) {
+        TextField campo = new TextField(cliente.getDatosAdicionales().getOrDefault(clave, ""));
+        if (!clave.equals("rif")) campo.setPromptText("Opcional");
+        return campo;
+    }
+
+    private Map<String, String> datosContacto(TextField rif, TextField email, TextField telefono, TextField direccion) {
+        Map<String, String> datos = new LinkedHashMap<>();
+        datos.put("rif", rif.getText());
+        datos.put("email", email.getText());
+        datos.put("telefono", telefono.getText());
+        datos.put("direccion", direccion.getText());
+        return datos;
+    }
+
+    private void exportarCliente(Cliente cliente) {
+        List<ReportePedido> reportes = cobranzaService.listarPedidos(cliente.getId(), null).stream()
+                .map(this::prepararReportePedido).toList();
+        Path destino = elegirDestino("Cliente-" + cliente.getId() + "-" + nombreArchivo(cliente.getNombre()) + ".xls");
+        if (destino == null) return;
+        try {
+            excelReportExporter.exportarCliente(cliente, reportes, destino);
+            mostrarAviso("Reporte del cliente exportado correctamente.");
+        } catch (IOException | RuntimeException excepcion) {
+            mostrarError("No se pudo exportar el reporte: " + mensaje(excepcion));
+        }
+    }
+
+    private void exportarPedido(Cliente cliente, Pedido pedido) {
+        Path destino = elegirDestino("Pedido-" + pedido.getId() + "-" + nombreArchivo(cliente.getNombre()) + ".xls");
+        if (destino == null) return;
+        try {
+            excelReportExporter.exportarPedido(cliente, prepararReportePedido(pedido), destino);
+            mostrarAviso("Reporte del pedido exportado correctamente.");
+        } catch (IOException | RuntimeException excepcion) {
+            mostrarError("No se pudo exportar el reporte: " + mensaje(excepcion));
+        }
+    }
+
+    private ReportePedido prepararReportePedido(Pedido pedido) {
+        List<Pago> pagos = cobranzaService.listarPagos(pedido.getId());
+        return new ReportePedido(pedido, pagos, cobranzaService.obtenerSaldoPendiente(pedido.getId()),
+                tiempoService.calcularTiempo(pedido, pagos));
+    }
+
+    private Path elegirDestino(String nombreInicial) {
+        FileChooser selector = new FileChooser();
+        selector.setTitle("Exportar reporte de cobranza");
+        selector.setInitialFileName(nombreInicial);
+        selector.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel 97-2003 (*.xls)", "*.xls"));
+        var escena = root.getScene();
+        File archivo = selector.showSaveDialog(escena == null ? null : escena.getWindow());
+        if (archivo == null) return null;
+        String ruta = archivo.getAbsolutePath();
+        return Path.of(ruta.toLowerCase().endsWith(".xls") ? ruta : ruta + ".xls");
+    }
+
+    private String nombreArchivo(String nombre) {
+        return nombre.replaceAll("[^A-Za-z0-9._-]", "_");
+    }
+
+    private String mensaje(Exception excepcion) {
+        return excepcion.getMessage() == null ? "Ocurrió un error inesperado." : excepcion.getMessage();
     }
 
     private void crearPedido(Cliente cliente) {
@@ -515,7 +621,7 @@ public class VentanaPrincipal {
 
     private void mostrarAviso(String mensaje) {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION, mensaje, ButtonType.OK);
-        alerta.setTitle("ReggisApp");
+        alerta.setTitle("Reggis");
         alerta.setHeaderText(null);
         alerta.showAndWait();
     }
