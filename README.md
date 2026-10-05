@@ -1,6 +1,8 @@
-# Reggis 1.0.0
+# Reggis
 
-Reggis es una aplicación de escritorio para organizar clientes, pedidos y cobros. Permite registrar pagos parciales o completos, conservar el historial de cada operación y consultar cuánto tarda cada cliente en abonar y cancelar un pedido. La interfaz está hecha con JavaFX y los datos se guardan localmente en SQLite.
+**Reggis 1.0.0** es una aplicación de escritorio para gestionar clientes, pedidos y cobranzas. Está construida con Java y JavaFX, y almacena los datos localmente en SQLite.
+
+Registra pagos parciales o completos en bolívares o dólares, conserva el historial, calcula los tiempos de pago y exporta reportes Excel (`.xls`) por cliente o pedido. Incluye un instalador para Windows.
 
 ## Funciones
 
