@@ -48,10 +48,29 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "No se pudieron copiar las dependencias de ejecución." }
 
     $mainJar = "ReggisApp-$appVersion.jar"
-    Copy-Item -LiteralPath (Join-Path $projectRoot "target\$mainJar") -Destination (Join-Path $inputDir $mainJar)
-    $classpath = (Get-ChildItem -LiteralPath $inputDir -Filter "*.jar" -File |
+    $mainJarPath = Join-Path $inputDir $mainJar
+    Copy-Item -LiteralPath (Join-Path $projectRoot "target\$mainJar") -Destination $mainJarPath
+    $dependencyJars = Get-ChildItem -LiteralPath $inputDir -Filter "*.jar" -File |
         Where-Object Name -ne $mainJar |
-        ForEach-Object Name) -join ";"
+        ForEach-Object Name
+    $manifestLines = [System.Collections.Generic.List[string]]::new()
+    $manifestLine = "Class-Path: "
+    foreach ($dependencyJar in $dependencyJars) {
+        $entry = if ($manifestLine.EndsWith(" ")) { $dependencyJar } else { " $dependencyJar" }
+        if (($manifestLine.Length + $entry.Length) -gt 70) {
+            $manifestLines.Add($manifestLine)
+            $manifestLine = "  $dependencyJar"
+        } else {
+            $manifestLine += $entry
+        }
+    }
+    if ($manifestLine -ne "Class-Path: ") { $manifestLines.Add($manifestLine) }
+    $manifestPath = Join-Path $projectRoot "target\installer-manifest.mf"
+    [System.IO.File]::WriteAllText($manifestPath, ($manifestLines -join "`r`n") + "`r`n", [System.Text.Encoding]::ASCII)
+    $jarTool = Join-Path $env:JAVA_HOME "bin\jar.exe"
+    if (-not (Test-Path -LiteralPath $jarTool)) { throw "No se encontró jar.exe en JAVA_HOME." }
+    & $jarTool "ufm" $mainJarPath $manifestPath
+    if ($LASTEXITCODE -ne 0) { throw "No se pudo añadir el class-path de dependencias al JAR." }
 
     $jpackageArgs = @(
         "--type", "exe",
@@ -69,7 +88,6 @@ try {
         "--win-shortcut",
         "--win-upgrade-uuid", "7f97a44e-8e70-4f7b-9919-82f5f8d21752"
     )
-    if ($classpath) { $jpackageArgs += @("--class-path", $classpath) }
     & $jpackage @jpackageArgs
     if ($LASTEXITCODE -ne 0) { throw "jpackage no pudo generar el instalador. Revisa que WiX Toolset esté instalado." }
 
