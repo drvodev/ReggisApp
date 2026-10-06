@@ -2,7 +2,7 @@
 
 ## Versión actual
 
-La versión del proyecto es **1.0.1**, definida en `<version>` de `pom.xml`. El ejecutable que se instala se presenta como Reggis; el JAR principal se llama `ReggisApp-1.0.1.jar` porque conserva el nombre técnico del proyecto.
+La versión del proyecto es **1.0.2**, definida en `<version>` de `pom.xml`. El ejecutable que se instala se presenta como Reggis; el JAR principal se llama `ReggisApp-1.0.2.jar` porque conserva el nombre técnico del proyecto.
 
 ## Requisitos para crear el instalador
 
@@ -25,7 +25,7 @@ Después, desde PowerShell y la raíz del proyecto, ejecuta:
 ./scripts/crear-instalador-windows.ps1
 ```
 
-El script compila el JAR y sus dependencias de ejecución, y llama a `jpackage`. Incluye el icono de Reggis (una “R” blanca sobre fondo azul) en el ejecutable instalado. El instalador se guarda en `dist/Reggis-1.0.1.exe`. El script configura explícitamente los módulos JavaFX en el lanzador de Windows. El script omite las pruebas durante el empaquetado, por eso se ejecutan antes con `mvn clean verify`.
+El script compila el JAR y sus dependencias de ejecución, y llama a `jpackage`. Incluye el icono de Reggis (una “R” blanca sobre fondo azul) en el ejecutable instalado. El instalador se guarda en `dist/Reggis-1.0.2.exe`. JavaFX se incluye en el runtime privado generado por `jpackage`. El script omite las pruebas durante el empaquetado, por eso se ejecutan antes con `mvn clean verify`.
 
 ## Versiones siguientes
 

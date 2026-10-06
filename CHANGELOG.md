@@ -1,5 +1,11 @@
 # Registro de cambios
 
+## 1.0.2 — 2026-10-05
+
+### Corregido
+
+- Se incluye JavaFX en el runtime empaquetado para evitar el error "Failed to launch JVM" al abrir la aplicación instalada.
+
 ## 1.0.1 — 2026-10-05
 
 ### Corregido

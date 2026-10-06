@@ -83,17 +83,19 @@ try {
         "--icon", $icon,
         "--main-jar", $mainJar,
         "--main-class", "org.drvo.reggisapp.ReggisApp",
-        "--java-options", "--module-path=$APPDIR",
-        "--java-options", "--add-modules=javafx.controls",
+        "--module-path", $inputDir,
+        "--add-modules", "java.se,javafx.controls",
         "--win-per-user-install",
         "--win-menu",
         "--win-shortcut",
         "--win-upgrade-uuid", "7f97a44e-8e70-4f7b-9919-82f5f8d21752"
     )
+    $installerPath = Join-Path $outputDir "Reggis-$appVersion.exe"
+    Remove-Item -LiteralPath $installerPath -Force -ErrorAction SilentlyContinue
     & $jpackage @jpackageArgs
     if ($LASTEXITCODE -ne 0) { throw "jpackage no pudo generar el instalador. Revisa que WiX Toolset esté instalado." }
 
-    Write-Host "Instalador generado en: $(Join-Path $outputDir "Reggis-$appVersion.exe")"
+    Write-Host "Instalador generado en: $installerPath"
 } finally {
     Pop-Location
 }
