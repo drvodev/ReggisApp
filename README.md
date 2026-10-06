@@ -1,6 +1,6 @@
 # Reggis
 
-**Reggis 1.0.0** es una aplicación de escritorio para gestionar clientes, pedidos y cobranzas. Está construida con Java y JavaFX, y almacena los datos localmente en SQLite.
+**Reggis 1.0.1** es una aplicación de escritorio para gestionar clientes, pedidos y cobranzas. Está construida con Java y JavaFX, y almacena los datos localmente en SQLite.
 
 Registra pagos parciales o completos en bolívares o dólares, conserva el historial, calcula los tiempos de pago y exporta reportes Excel (`.xls`) por cliente o pedido. Incluye un instalador para Windows.
 
@@ -53,7 +53,7 @@ Desde PowerShell, en la raíz del proyecto:
 ./scripts/crear-instalador-windows.ps1
 ```
 
-Se genera `dist/Reggis-1.0.0.exe` con el icono de la aplicación (una “R” blanca sobre fondo azul). El equipo que lo construya necesita JDK 25, Maven y WiX Toolset. La guía de [instalación y versionado](docs/instalador-y-versiones.md) describe la actualización de versiones.
+Se genera `dist/Reggis-1.0.1.exe` con el icono de la aplicación (una “R” blanca sobre fondo azul). El equipo que lo construya necesita JDK 25, Maven y WiX Toolset. La guía de [instalación y versionado](docs/instalador-y-versiones.md) describe la actualización de versiones.
 
 ## Estructura y diseño
 

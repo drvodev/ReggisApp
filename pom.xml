@@ -6,7 +6,7 @@
 
     <groupId>org.drvo.reggisapp</groupId>
     <artifactId>ReggisApp</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <properties>
         <maven.compiler.release>25</maven.compiler.release>

@@ -83,6 +83,8 @@ try {
         "--icon", $icon,
         "--main-jar", $mainJar,
         "--main-class", "org.drvo.reggisapp.ReggisApp",
+        "--java-options", "--module-path=$APPDIR",
+        "--java-options", "--add-modules=javafx.controls",
         "--win-per-user-install",
         "--win-menu",
         "--win-shortcut",

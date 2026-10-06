@@ -1,5 +1,11 @@
 # Registro de cambios
 
+## 1.0.1 — 2026-10-05
+
+### Corregido
+
+- Configuración del lanzador de Windows para cargar explícitamente JavaFX al abrir Reggis.
+
 ## 1.0.0 — 2026-10-04
 
 Primera versión de escritorio de Reggis para registrar clientes y administrar sus cobranzas localmente.
