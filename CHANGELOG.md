@@ -1,5 +1,9 @@
 # Registro de cambios
 
+## Sin publicar
+
+- Se pueden retirar marcas del catálogo conservando su historial y reactivarlas al agregarlas nuevamente.
+
 ## 1.1.0 — 2026-10-29
 
 - Catálogo configurable de marcas y selección de marcas compradas por pedido.

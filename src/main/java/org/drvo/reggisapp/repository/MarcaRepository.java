@@ -5,6 +5,7 @@ import org.drvo.reggisapp.domain.model.MarcaPedido;
 public interface MarcaRepository {
     List<MarcaPedido> listar();
     void crear(String nombre);
+    void retirar(long id);
     void guardarSeleccion(long pedidoId, Set<Long> seleccionadas);
     List<MarcaPedido> listarPorPedido(long pedidoId);
 }

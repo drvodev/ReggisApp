@@ -11,7 +11,7 @@ import java.util.Objects;
 
 /** Ubica e inicializa el archivo local SQLite de la aplicación. */
 public final class DatabaseConfig {
-    private static final int VERSION_ESQUEMA = 3;
+    private static final int VERSION_ESQUEMA = 4;
     private final Path archivoBaseDatos;
 
     public DatabaseConfig() {
@@ -55,6 +55,7 @@ public final class DatabaseConfig {
                         versionActual = 2;
                     }
                     if (versionActual < 3) migrarV3(sentencia);
+                    if (versionActual < 4) migrarV4(sentencia);
                     sentencia.execute("PRAGMA user_version = " + VERSION_ESQUEMA);
                 }
                 return null;
@@ -114,6 +115,10 @@ public final class DatabaseConfig {
     private void migrarV3(Statement sentencia) throws java.sql.SQLException {
         sentencia.execute("CREATE TABLE marcas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK(length(trim(nombre)) > 0))");
         sentencia.execute("CREATE TABLE pedido_marcas (pedido_id INTEGER NOT NULL REFERENCES pedidos(id), marca_id INTEGER NOT NULL REFERENCES marcas(id), seleccionada INTEGER NOT NULL CHECK(seleccionada IN (0,1)), PRIMARY KEY(pedido_id, marca_id))");
+    }
+
+    private void migrarV4(Statement sentencia) throws java.sql.SQLException {
+        sentencia.execute("ALTER TABLE marcas ADD COLUMN activa INTEGER NOT NULL DEFAULT 1 CHECK(activa IN (0,1))");
     }
 
     private static Path rutaLocalAplicacion() {

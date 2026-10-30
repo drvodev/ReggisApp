@@ -16,6 +16,7 @@ public interface CobranzaService {
     List<org.drvo.reggisapp.domain.model.MarcaPedido> listarMarcas();
     List<org.drvo.reggisapp.domain.model.MarcaPedido> listarMarcasPedido(Long pedidoId);
     void crearMarca(String nombre);
+    void retirarMarca(long id);
     Pago registrarPago(Long pedidoId, BigDecimal monto, Moneda moneda, BigDecimal tasaCambio);
     Pedido anularPedido(Long pedidoId, String motivo, ResolucionAnulacion resolucion, Long pedidoDestinoId);
     BigDecimal obtenerSaldoPendiente(Long pedidoId);

@@ -7,7 +7,7 @@ Registra pagos parciales o completos en bolívares o dólares, conserva el histo
 ## Funciones
 
 - **Clientes:** nombre y RIF obligatorios; correo, teléfono y dirección opcionales. Cada cliente puede tener varios pedidos.
-- **Pedidos:** descripción, monto, moneda original y tasa de cambio ingresada manualmente. El saldo contable se registra en bolívares (BS). Al crear un pedido se pueden agregar marcas al catálogo y marcar las compradas; el detalle conserva las marcas activadas y no activadas en ese momento. Los pedidos anteriores no tienen marcas registradas.
+- **Pedidos:** descripción, monto, moneda original y tasa de cambio ingresada manualmente. El saldo contable se registra en bolívares (BS). Al crear un pedido se pueden agregar marcas al catálogo y marcar las compradas; el detalle conserva las marcas activadas y no activadas en ese momento. Se pueden eliminar marcas del catálogo sin alterar pedidos anteriores; al agregarlas de nuevo se reactivan. Los pedidos anteriores no tienen marcas registradas.
 - **Pagos:** abonos parciales o totales en BS o USD. Cada pago guarda la fecha, el importe original, su equivalente en BS y la tasa aplicada.
 - **Seguimiento:** consulta de pagos, historial, promedio de días entre pagos, días hasta el primer pago y duración total de la deuda.
 - **Reportes Excel `.xls`:** exporta todos los pedidos y pagos de un cliente, o exporta el pedido seleccionado con sus pagos y métricas.

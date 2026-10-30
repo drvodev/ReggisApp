@@ -446,22 +446,31 @@ public class VentanaPrincipal {
                 new javafx.scene.Node[]{descripcion, monto, moneda, tasa});
         VBox listaMarcas = new VBox(7);
         Map<Long, javafx.scene.control.CheckBox> casillas = new LinkedHashMap<>();
-        Runnable actualizarMarcas = () -> {
+        Runnable[] actualizarMarcas = new Runnable[1];
+        actualizarMarcas[0] = () -> {
             var existentes = new java.util.HashSet<Long>();
             casillas.forEach((id, casilla) -> { if (casilla.isSelected()) existentes.add(id); });
             casillas.clear(); listaMarcas.getChildren().clear();
             for (var marca : cobranzaService.listarMarcas()) {
                 var casilla = new javafx.scene.control.CheckBox(marca.nombre());
                 casilla.setSelected(existentes.contains(marca.id()));
-                casillas.put(marca.id(), casilla); listaMarcas.getChildren().add(casilla);
+                casillas.put(marca.id(), casilla);
+                Button eliminar = boton("Eliminar", "button-danger", () -> {
+                    if (confirmar("Eliminar marca", "¿Eliminar " + marca.nombre() + " del catálogo? Los pedidos anteriores conservarán esta marca.")) {
+                        ejecutarSeguro(() -> { cobranzaService.retirarMarca(marca.id()); actualizarMarcas[0].run(); });
+                    }
+                });
+                HBox fila = new HBox(10, casilla, crearEspaciador(), eliminar);
+                fila.setAlignment(Pos.CENTER_LEFT);
+                listaMarcas.getChildren().add(fila);
             }
         };
-        actualizarMarcas.run();
+        actualizarMarcas[0].run();
         ScrollPane marcasScroll = new ScrollPane(listaMarcas);
         marcasScroll.setFitToWidth(true); marcasScroll.setPrefViewportHeight(100);
         TextField nuevaMarca = new TextField(); nuevaMarca.setPromptText("Nombre de la marca");
         Button agregarMarca = boton("Agregar marca", "button-secondary", () -> ejecutarSeguro(() -> {
-            cobranzaService.crearMarca(nuevaMarca.getText()); nuevaMarca.clear(); actualizarMarcas.run();
+            cobranzaService.crearMarca(nuevaMarca.getText()); nuevaMarca.clear(); actualizarMarcas[0].run();
         }));
         formulario.add(new Label("Marcas compradas"), 0, 4);
         formulario.add(new VBox(8, marcasScroll, new HBox(8, nuevaMarca, agregarMarca)), 1, 4);

@@ -61,6 +61,40 @@ class MarcasPedidoTest {
         config.inicializar(conexiones);
         assertEquals("Anterior", pedidos.buscarPorId(pedido.getId()).orElseThrow().getDescripcion());
         assertTrue(new SqliteMarcaRepository(conexiones).listarPorPedido(pedido.getId()).isEmpty());
-        conexiones.withConnection(c -> { try (var s = c.createStatement(); var r = s.executeQuery("PRAGMA user_version")) { assertEquals(3, r.getInt(1)); } return null; });
+        conexiones.withConnection(c -> { try (var s = c.createStatement(); var r = s.executeQuery("PRAGMA user_version")) { assertEquals(4, r.getInt(1)); } return null; });
+    }
+
+    @Test void retirarYReactivarConservaLosPedidosYNoApareceEnNuevos() {
+        var config = new DatabaseConfig(temporal.resolve("retiro.db"));
+        var servicios = new AppServices(config);
+        var cliente = servicios.clienteService().crear("Cliente", Map.of("rif", "J-123"));
+        var cobranza = servicios.cobranzaService();
+        cobranza.crearMarca("Kronk");
+        long id = cobranza.listarMarcas().getFirst().id();
+        var anterior = cobranza.crearPedidoConMarcas(cliente.getId(), "Antes", BigDecimal.TEN, Moneda.BS, BigDecimal.TEN, Set.of(id));
+        cobranza.retirarMarca(id);
+        assertTrue(cobranza.listarMarcas().isEmpty());
+        assertTrue(new AppServices(config).cobranzaService().listarMarcasPedido(anterior.getId()).getFirst().seleccionada());
+        assertThrows(RuntimeException.class, () -> cobranza.crearPedidoConMarcas(cliente.getId(), "Inválido", BigDecimal.TEN, Moneda.BS, BigDecimal.TEN, Set.of(id)));
+        var posterior = cobranza.crearPedidoConMarcas(cliente.getId(), "Después", BigDecimal.TEN, Moneda.BS, BigDecimal.TEN, Set.of());
+        assertTrue(cobranza.listarMarcasPedido(posterior.getId()).isEmpty());
+        cobranza.crearMarca("kronk");
+        assertEquals(id, cobranza.listarMarcas().getFirst().id());
+        assertTrue(cobranza.listarMarcasPedido(anterior.getId()).getFirst().seleccionada());
+        assertTrue(cobranza.listarMarcasPedido(posterior.getId()).isEmpty());
+    }
+
+    @Test void migraMarcasExistentesDeVersionTresComoActivas() {
+        var config = new DatabaseConfig(temporal.resolve("v3.db"));
+        var conexiones = config.crearConnectionFactory();
+        config.inicializar(conexiones);
+        var repo = new SqliteMarcaRepository(conexiones);
+        repo.crear("Once-once");
+        conexiones.withConnection(c -> { try (var s = c.createStatement()) {
+            s.execute("ALTER TABLE marcas DROP COLUMN activa");
+            s.execute("PRAGMA user_version = 3");
+        } return null; });
+        config.inicializar(conexiones);
+        assertEquals("Once-once", repo.listar().getFirst().nombre());
     }
 }

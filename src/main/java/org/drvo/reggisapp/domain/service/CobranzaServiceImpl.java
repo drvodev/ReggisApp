@@ -69,6 +69,7 @@ public class CobranzaServiceImpl implements CobranzaService {
     @Override public List<org.drvo.reggisapp.domain.model.MarcaPedido> listarMarcas() { return marcaRepository.listar(); }
     @Override public List<org.drvo.reggisapp.domain.model.MarcaPedido> listarMarcasPedido(Long id) { return marcaRepository.listarPorPedido(id); }
     @Override public void crearMarca(String nombre) { marcaRepository.crear(nombre); }
+    @Override public void retirarMarca(long id) { marcaRepository.retirar(id); }
     @Override public Pedido crearPedidoConMarcas(Long clienteId, String descripcion, BigDecimal monto, Moneda moneda, BigDecimal tasa, java.util.Set<Long> marcas) {
         return transactionBoundary.inTransaction(() -> {
             Pedido pedido = crearPedidoEnTransaccion(clienteId, descripcion, monto, moneda, tasa);
