@@ -52,8 +52,10 @@ public final class AppServices {
         Clock clock = Clock.systemDefaultZone();
 
         clienteService = new ClienteServiceImpl(clientes, campos, historialRepository, clock, conexiones);
-        cobranzaService = new CobranzaServiceImpl(clientes, pedidos, pagos, historialRepository, movimientos,
+        var cobranza = new CobranzaServiceImpl(clientes, pedidos, pagos, historialRepository, movimientos,
                 new TasaCambioManualService(), clock, conexiones);
+        cobranza.configurarMarcas(new org.drvo.reggisapp.repository.sqlite.SqliteMarcaRepository(conexiones));
+        cobranzaService = cobranza;
         tiempoService = new TiempoServiceImpl();
         reporteService = new ReporteServiceImpl(clientes);
     }

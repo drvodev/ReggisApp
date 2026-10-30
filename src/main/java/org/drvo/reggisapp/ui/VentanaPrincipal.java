@@ -238,8 +238,15 @@ public class VentanaPrincipal {
         historial.setPlaceholder(new Label("Selecciona un pedido para consultar su historial."));
         historial.setPrefHeight(110);
 
+        Label marcasPedido = new Label("Selecciona un pedido para ver sus marcas.");
+        marcasPedido.setWrapText(true);
         tablaPedidos.getSelectionModel().selectedItemProperty().addListener((observable, anterior, pedido) -> {
-            if (pedido != null) actualizarDetallePedido(pedido, tablaPagos, resumenTiempo, historial);
+            if (pedido != null) {
+                actualizarDetallePedido(pedido, tablaPagos, resumenTiempo, historial);
+                var marcas = cobranzaService.listarMarcasPedido(pedido.getId());
+                marcasPedido.setText(marcas == null || marcas.isEmpty() ? "Sin marcas registradas para este pedido." :
+                    marcas.stream().map(m -> m.nombre() + (m.seleccionada() ? " · Activada" : " · No activada")).collect(java.util.stream.Collectors.joining("   |   ")));
+            }
         });
 
         Button nuevo = boton("Nuevo pedido", "button-primary", () -> crearPedido(cliente));
@@ -278,7 +285,7 @@ public class VentanaPrincipal {
 
         Label pagosTitulo = tituloSeccion("Pagos registrados");
         Label historialTitulo = tituloSeccion("Historial del pedido");
-        VBox vista = new VBox(14, titulo, subtitulo, tablaPedidos, acciones, exportaciones, accionesCliente,
+        VBox vista = new VBox(14, titulo, subtitulo, tablaPedidos, acciones, tituloSeccion("Marcas del pedido"), marcasPedido, exportaciones, accionesCliente,
                 pagosTitulo, tablaPagos, resumenTiempo, historialTitulo, historial);
         vista.setPadding(new Insets(42, 64, 42, 64));
         vista.getStyleClass().add("page");
@@ -437,11 +444,34 @@ public class VentanaPrincipal {
         GridPane formulario = formulario(
                 new String[]{"Descripción", "Monto", "Moneda", "Tasa BS por USD"},
                 new javafx.scene.Node[]{descripcion, monto, moneda, tasa});
+        VBox listaMarcas = new VBox(7);
+        Map<Long, javafx.scene.control.CheckBox> casillas = new LinkedHashMap<>();
+        Runnable actualizarMarcas = () -> {
+            var existentes = new java.util.HashSet<Long>();
+            casillas.forEach((id, casilla) -> { if (casilla.isSelected()) existentes.add(id); });
+            casillas.clear(); listaMarcas.getChildren().clear();
+            for (var marca : cobranzaService.listarMarcas()) {
+                var casilla = new javafx.scene.control.CheckBox(marca.nombre());
+                casilla.setSelected(existentes.contains(marca.id()));
+                casillas.put(marca.id(), casilla); listaMarcas.getChildren().add(casilla);
+            }
+        };
+        actualizarMarcas.run();
+        ScrollPane marcasScroll = new ScrollPane(listaMarcas);
+        marcasScroll.setFitToWidth(true); marcasScroll.setPrefViewportHeight(100);
+        TextField nuevaMarca = new TextField(); nuevaMarca.setPromptText("Nombre de la marca");
+        Button agregarMarca = boton("Agregar marca", "button-secondary", () -> ejecutarSeguro(() -> {
+            cobranzaService.crearMarca(nuevaMarca.getText()); nuevaMarca.clear(); actualizarMarcas.run();
+        }));
+        formulario.add(new Label("Marcas compradas"), 0, 4);
+        formulario.add(new VBox(8, marcasScroll, new HBox(8, nuevaMarca, agregarMarca)), 1, 4);
         Dialog<ButtonType> dialogo = dialogoFormulario("Nuevo pedido", formulario, "Crear pedido");
         dialogo.showAndWait().filter(tipo -> tipo.getButtonData() == ButtonBar.ButtonData.OK_DONE).ifPresent(tipo ->
                 ejecutarSeguro(() -> {
-                    cobranzaService.crearPedido(cliente.getId(), descripcion.getText(), decimal(monto.getText()),
-                            moneda.getValue(), decimal(tasa.getText()));
+                    var seleccionadas = casillas.entrySet().stream().filter(e -> e.getValue().isSelected())
+                            .map(Map.Entry::getKey).collect(java.util.stream.Collectors.toSet());
+                    cobranzaService.crearPedidoConMarcas(cliente.getId(), descripcion.getText(), decimal(monto.getText()),
+                            moneda.getValue(), decimal(tasa.getText()), seleccionadas);
                     mostrarPedidos(cliente);
                 }));
     }

@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class CobranzaServiceImpl implements CobranzaService {
+    private org.drvo.reggisapp.repository.MarcaRepository marcaRepository;
     private final ClienteRepository clienteRepository;
     private final PedidoRepository pedidoRepository;
     private final PagoRepository pagoRepository;
@@ -62,6 +63,18 @@ public class CobranzaServiceImpl implements CobranzaService {
         this.tasaCambioService = Objects.requireNonNull(tasaCambioService);
         this.clock = Objects.requireNonNull(clock);
         this.transactionBoundary = Objects.requireNonNull(transactionBoundary);
+    }
+
+    public void configurarMarcas(org.drvo.reggisapp.repository.MarcaRepository repositorio) { this.marcaRepository = Objects.requireNonNull(repositorio); }
+    @Override public List<org.drvo.reggisapp.domain.model.MarcaPedido> listarMarcas() { return marcaRepository.listar(); }
+    @Override public List<org.drvo.reggisapp.domain.model.MarcaPedido> listarMarcasPedido(Long id) { return marcaRepository.listarPorPedido(id); }
+    @Override public void crearMarca(String nombre) { marcaRepository.crear(nombre); }
+    @Override public Pedido crearPedidoConMarcas(Long clienteId, String descripcion, BigDecimal monto, Moneda moneda, BigDecimal tasa, java.util.Set<Long> marcas) {
+        return transactionBoundary.inTransaction(() -> {
+            Pedido pedido = crearPedidoEnTransaccion(clienteId, descripcion, monto, moneda, tasa);
+            marcaRepository.guardarSeleccion(pedido.getId(), Objects.requireNonNull(marcas));
+            return pedido;
+        });
     }
 
     @Override

@@ -11,7 +11,7 @@ import java.util.Objects;
 
 /** Ubica e inicializa el archivo local SQLite de la aplicación. */
 public final class DatabaseConfig {
-    private static final int VERSION_ESQUEMA = 2;
+    private static final int VERSION_ESQUEMA = 3;
     private final Path archivoBaseDatos;
 
     public DatabaseConfig() {
@@ -34,8 +34,11 @@ public final class DatabaseConfig {
         try {
             Files.createDirectories(archivoBaseDatos.getParent());
             conexiones.withConnection(conexion -> {
+                try (Statement sentencia = conexion.createStatement()) { sentencia.execute("PRAGMA journal_mode = WAL"); }
+                return null;
+            });
+            conexiones.inTransaction(() -> conexiones.withConnection(conexion -> {
                 try (Statement sentencia = conexion.createStatement()) {
-                    sentencia.execute("PRAGMA journal_mode = WAL");
                     int versionActual;
                     try (ResultSet resultado = sentencia.executeQuery("PRAGMA user_version")) {
                         versionActual = resultado.next() ? resultado.getInt(1) : 0;
@@ -51,10 +54,11 @@ public final class DatabaseConfig {
                         migrarV2(sentencia);
                         versionActual = 2;
                     }
+                    if (versionActual < 3) migrarV3(sentencia);
                     sentencia.execute("PRAGMA user_version = " + VERSION_ESQUEMA);
                 }
                 return null;
-            });
+            }));
         } catch (PersistenciaException excepcion) {
             throw excepcion;
         } catch (Exception excepcion) {
@@ -105,6 +109,11 @@ public final class DatabaseConfig {
                 "BEGIN SELECT RAISE(ABORT, 'El historial es inmutable'); END");
         sentencia.execute("CREATE TRIGGER historial_inmutable_delete BEFORE DELETE ON historial " +
                 "BEGIN SELECT RAISE(ABORT, 'El historial es inmutable'); END");
+    }
+
+    private void migrarV3(Statement sentencia) throws java.sql.SQLException {
+        sentencia.execute("CREATE TABLE marcas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK(length(trim(nombre)) > 0))");
+        sentencia.execute("CREATE TABLE pedido_marcas (pedido_id INTEGER NOT NULL REFERENCES pedidos(id), marca_id INTEGER NOT NULL REFERENCES marcas(id), seleccionada INTEGER NOT NULL CHECK(seleccionada IN (0,1)), PRIMARY KEY(pedido_id, marca_id))");
     }
 
     private static Path rutaLocalAplicacion() {

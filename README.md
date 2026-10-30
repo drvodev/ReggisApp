@@ -1,13 +1,13 @@
 # Reggis
 
-**Reggis 1.0.2** es una aplicación de escritorio para gestionar clientes, pedidos y cobranzas. Está construida con Java y JavaFX, y almacena los datos localmente en SQLite.
+**Reggis 1.1.0** es una aplicación de escritorio para gestionar clientes, pedidos y cobranzas. Está construida con Java y JavaFX, y almacena los datos localmente en SQLite.
 
 Registra pagos parciales o completos en bolívares o dólares, conserva el historial, calcula los tiempos de pago y exporta reportes Excel (`.xls`) por cliente o pedido. Incluye un instalador para Windows.
 
 ## Funciones
 
 - **Clientes:** nombre y RIF obligatorios; correo, teléfono y dirección opcionales. Cada cliente puede tener varios pedidos.
-- **Pedidos:** descripción, monto, moneda original y tasa de cambio ingresada manualmente. El saldo contable se registra en bolívares (BS).
+- **Pedidos:** descripción, monto, moneda original y tasa de cambio ingresada manualmente. El saldo contable se registra en bolívares (BS). Al crear un pedido se pueden agregar marcas al catálogo y marcar las compradas; el detalle conserva las marcas activadas y no activadas en ese momento. Los pedidos anteriores no tienen marcas registradas.
 - **Pagos:** abonos parciales o totales en BS o USD. Cada pago guarda la fecha, el importe original, su equivalente en BS y la tasa aplicada.
 - **Seguimiento:** consulta de pagos, historial, promedio de días entre pagos, días hasta el primer pago y duración total de la deuda.
 - **Reportes Excel `.xls`:** exporta todos los pedidos y pagos de un cliente, o exporta el pedido seleccionado con sus pagos y métricas.
@@ -53,7 +53,7 @@ Desde PowerShell, en la raíz del proyecto:
 ./scripts/crear-instalador-windows.ps1
 ```
 
-Se genera `dist/Reggis-1.0.2.exe` con el icono de la aplicación (una “R” blanca sobre fondo azul). El equipo que lo construya necesita JDK 25, Maven y WiX Toolset. La guía de [instalación y versionado](docs/instalador-y-versiones.md) describe la actualización de versiones.
+Se genera `dist/Reggis-1.1.0.exe` con el icono de la aplicación (una “R” blanca sobre fondo azul). El equipo que lo construya necesita JDK 25, Maven y WiX Toolset. La guía de [instalación y versionado](docs/instalador-y-versiones.md) describe la actualización de versiones.
 
 ## Estructura y diseño
 

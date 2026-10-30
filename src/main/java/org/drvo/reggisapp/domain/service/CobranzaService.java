@@ -12,6 +12,10 @@ import java.util.List;
 public interface CobranzaService {
     Pedido crearPedido(Long clienteId, BigDecimal monto, Moneda moneda, BigDecimal tasaCambio);
     Pedido crearPedido(Long clienteId, String descripcion, BigDecimal monto, Moneda moneda, BigDecimal tasaCambio);
+    Pedido crearPedidoConMarcas(Long clienteId, String descripcion, BigDecimal monto, Moneda moneda, BigDecimal tasaCambio, java.util.Set<Long> marcas);
+    List<org.drvo.reggisapp.domain.model.MarcaPedido> listarMarcas();
+    List<org.drvo.reggisapp.domain.model.MarcaPedido> listarMarcasPedido(Long pedidoId);
+    void crearMarca(String nombre);
     Pago registrarPago(Long pedidoId, BigDecimal monto, Moneda moneda, BigDecimal tasaCambio);
     Pedido anularPedido(Long pedidoId, String motivo, ResolucionAnulacion resolucion, Long pedidoDestinoId);
     BigDecimal obtenerSaldoPendiente(Long pedidoId);
