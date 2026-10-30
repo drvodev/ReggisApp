@@ -1,6 +1,6 @@
 # Registro de cambios
 
-## Sin publicar
+## 1.1.1 — 2026-10-29
 
 - Se pueden retirar marcas del catálogo conservando su historial y reactivarlas al agregarlas nuevamente.
 

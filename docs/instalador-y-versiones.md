@@ -2,7 +2,7 @@
 
 ## Versión actual
 
-La versión del proyecto es **1.1.0**, definida en `<version>` de `pom.xml`. El ejecutable que se instala se presenta como Reggis; el JAR principal se llama `ReggisApp-1.1.0.jar` porque conserva el nombre técnico del proyecto.
+La versión del proyecto es **1.1.1**, definida en `<version>` de `pom.xml`. El ejecutable que se instala se presenta como Reggis; el JAR principal se llama `ReggisApp-1.1.1.jar` porque conserva el nombre técnico del proyecto.
 
 ## Requisitos para crear el instalador
 
@@ -25,11 +25,11 @@ Después, desde PowerShell y la raíz del proyecto, ejecuta:
 ./scripts/crear-instalador-windows.ps1
 ```
 
-El script compila el JAR y sus dependencias de ejecución, y llama a `jpackage`. Incluye el icono de Reggis (una “R” blanca sobre fondo azul) en el ejecutable instalado. El instalador se guarda en `dist/Reggis-1.1.0.exe`. JavaFX se incluye en el runtime privado generado por `jpackage`. El script omite las pruebas durante el empaquetado, por eso se ejecutan antes con `mvn clean verify`.
+El script compila el JAR y sus dependencias de ejecución, y llama a `jpackage`. Incluye el icono de Reggis (una “R” blanca sobre fondo azul) en el ejecutable instalado. El instalador se guarda en `dist/Reggis-1.1.1.exe`. JavaFX se incluye en el runtime privado generado por `jpackage`. El script omite las pruebas durante el empaquetado, por eso se ejecutan antes con `mvn clean verify`.
 
 ## Versiones siguientes
 
-Actualiza `<version>` en `pom.xml` para cada publicación. Usa `1.1.0` para una ampliación compatible y `2.0.0` para un cambio mayor. Conserva el valor `--win-upgrade-uuid` del script entre publicaciones para que Windows reconozca cada instalador como una actualización de la misma aplicación.
+Actualiza `<version>` en `pom.xml` para cada publicación. Usa `1.1.1` para una ampliación compatible y `2.0.0` para un cambio mayor. Conserva el valor `--win-upgrade-uuid` del script entre publicaciones para que Windows reconozca cada instalador como una actualización de la misma aplicación.
 
 La versión afecta el nombre del archivo `.exe`; para futuras publicaciones puede añadirse una etiqueta Git, por ejemplo `v1.0.0`, y adjuntar el instalador al lanzamiento correspondiente.
 
