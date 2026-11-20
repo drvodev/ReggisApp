@@ -20,16 +20,23 @@ public class TasaCambioManualService implements TasaCambioService {
         }
         if (moneda == null) throw new ReglaNegocioException("La moneda es obligatoria.");
 
+        BigDecimal original = monto.setScale(ESCALA_MONETARIA, RoundingMode.HALF_UP);
+        if (original.signum() <= 0) {
+            throw new ReglaNegocioException("El monto debe ser de al menos un centavo.");
+        }
         BigDecimal bolivares;
         BigDecimal dolares;
         if (moneda == Moneda.USD) {
-            dolares = monto.setScale(ESCALA_MONETARIA, RoundingMode.HALF_UP);
-            bolivares = monto.multiply(tasaCambio).setScale(ESCALA_MONETARIA, RoundingMode.HALF_UP);
+            dolares = original;
+            bolivares = original.multiply(tasaCambio).setScale(ESCALA_MONETARIA, RoundingMode.HALF_UP);
         } else {
-            bolivares = monto.setScale(ESCALA_MONETARIA, RoundingMode.HALF_UP);
+            bolivares = original;
             dolares = bolivares.divide(tasaCambio, ESCALA_MONETARIA, RoundingMode.HALF_UP);
         }
-        return new ConversionMonetaria(bolivares, dolares, monto.setScale(ESCALA_MONETARIA, RoundingMode.HALF_UP),
+        if (bolivares.signum() <= 0) {
+            throw new ReglaNegocioException("El equivalente en BS debe ser de al menos un centavo.");
+        }
+        return new ConversionMonetaria(bolivares, dolares, original,
                 moneda, tasaCambio);
     }
 }
