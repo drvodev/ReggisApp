@@ -13,6 +13,7 @@ target/
 *.sqlite3
 /data/
 /reports/
+/.signing/
 /dist/
 
 ### IntelliJ IDEA ###

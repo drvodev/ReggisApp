@@ -4,7 +4,7 @@
 
 Reggis organiza los cobros de clientes con uno o varios pedidos activos. Cada pago queda ligado a un pedido específico. El sistema calcula el saldo y conserva los registros necesarios para conocer cuándo se creó el pedido, cuándo se realizaron los pagos y cuándo se completó o anuló.
 
-Esta documentación describe la aplicación actual: la interfaz JavaFX usa los servicios de negocio y los datos se guardan en SQLite local.
+Esta documentación describe el dominio compartido y su implementación de escritorio. Android reutiliza los mismos servicios y contratos, con una interfaz Compose y adaptadores SQLite nativos. Cada plataforma mantiene su propia base local y sus migraciones.
 
 ## 2. Capas
 
@@ -108,7 +108,7 @@ Descripción de las pantallas:
 - `BigDecimal` representa los importes y evita errores binarios típicos de `double`.
 - BS es la unidad contable para los saldos y límites de pago.
 - Se permiten entradas en BS o USD con una tasa manual positiva.
-- El resultado se redondea a dos decimales usando `HALF_UP`.
+- El importe original se redondea a dos decimales usando `HALF_UP` antes de convertirlo. El equivalente contable se redondea del mismo modo; se rechazan importes originales o equivalentes en BS que queden en cero.
 - No hay integración con una API externa para obtener tasas.
 
 ### Métrica de tiempo

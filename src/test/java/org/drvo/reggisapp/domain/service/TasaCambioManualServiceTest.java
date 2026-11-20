@@ -41,6 +41,19 @@ class TasaCambioManualServiceTest {
     }
 
     @Test
+    void convierteElImporteOriginalRedondeadoDeFormaConsistente() {
+        ConversionMonetaria conversion = service.convertir(new BigDecimal("1.005"), Moneda.USD, new BigDecimal("100"));
+        assertEquals(new BigDecimal("1.01"), conversion.getMontoOriginal());
+        assertEquals(new BigDecimal("101.00"), conversion.getMontoBs());
+    }
+
+    @Test
+    void rechazaImportesQueSeRedondeanACero() {
+        assertThrows(ReglaNegocioException.class, () -> service.convertir(new BigDecimal("0.001"), Moneda.BS, BigDecimal.ONE));
+        assertThrows(ReglaNegocioException.class, () -> service.convertir(new BigDecimal("0.01"), Moneda.USD, new BigDecimal("0.01")));
+    }
+
+    @Test
     void rechazaMontoNuloCeroYTasaNoPositiva() {
         assertThrows(ReglaNegocioException.class, () -> service.convertir(null, Moneda.BS, BigDecimal.ONE));
         assertThrows(ReglaNegocioException.class, () -> service.convertir(BigDecimal.ZERO, Moneda.BS, BigDecimal.ONE));

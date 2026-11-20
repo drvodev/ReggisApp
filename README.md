@@ -1,62 +1,75 @@
 # Reggis
 
-**Reggis 1.1.1** es una aplicación de escritorio para gestionar clientes, pedidos y cobranzas. Está construida con Java y JavaFX, y almacena los datos localmente en SQLite.
+Reggis nació para resolver un problema cotidiano: llevar el control de los pedidos y las cobranzas de varios clientes sin depender de anotaciones dispersas ni hojas de cálculo difíciles de mantener.
 
-Registra pagos parciales o completos en bolívares o dólares, conserva el historial, calcula los tiempos de pago y exporta reportes Excel (`.xls`) por cliente o pedido. Incluye un instalador para Windows.
+Es una aplicación local para registrar ventas a crédito, gestionar abonos en bolívares o dólares, consultar saldos y conservar el historial de cada operación. No requiere servidor ni conexión a Internet.
 
-## Funciones
+## Estado del proyecto
 
-- **Clientes:** nombre y RIF obligatorios; correo, teléfono y dirección opcionales. Cada cliente puede tener varios pedidos.
-- **Pedidos:** descripción, monto, moneda original y tasa de cambio ingresada manualmente. El saldo contable se registra en bolívares (BS). Al crear un pedido se pueden agregar marcas al catálogo y marcar las compradas; el detalle conserva las marcas activadas y no activadas en ese momento. Se pueden eliminar marcas del catálogo sin alterar pedidos anteriores; al agregarlas de nuevo se reactivan. Los pedidos anteriores no tienen marcas registradas.
-- **Pagos:** abonos parciales o totales en BS o USD. Cada pago guarda la fecha, el importe original, su equivalente en BS y la tasa aplicada.
-- **Seguimiento:** consulta de pagos, historial, promedio de días entre pagos, días hasta el primer pago y duración total de la deuda.
-- **Reportes Excel `.xls`:** exporta todos los pedidos y pagos de un cliente, o exporta el pedido seleccionado con sus pagos y métricas.
-- **Trazabilidad:** el historial de pagos, cierres y anulaciones se conserva; las anulaciones requieren motivo y resolución.
+| Plataforma | Versión | Tecnología |
+| --- | --- | --- |
+| Windows | 1.1.1 | Java 25, JavaFX, Maven, SQLite JDBC |
+| Android | 0.1.0 beta | Kotlin, Jetpack Compose, Gradle, SQLite nativo |
 
-## Requisitos
+Ambas aplicaciones reutilizan el mismo dominio Java y el exportador Excel. Las bases de datos son independientes; todavía no existe sincronización ni migración automática entre dispositivos.
 
-- JDK 25
-- Maven 3.9+ o el Maven incluido con IntelliJ IDEA
-- Windows x64 y WiX Toolset para crear el instalador `.exe`
+## Funcionalidades
 
-## Ejecutar la aplicación
+- Gestión de clientes, datos de contacto y campos adicionales.
+- Varios pedidos por cliente, con descripción, moneda, tasa de cambio y marcas seleccionadas.
+- Abonos parciales o completos, con validación del saldo pendiente.
+- Historial, tiempos de pago y estado de cada pedido.
+- Anulación justificada, con condonación o traslado de saldo a otro pedido activo del mismo cliente.
+- Reportes Excel (`.xls`) por cliente o pedido.
 
-En IntelliJ IDEA, abre `pom.xml` como proyecto Maven y ejecuta `javafx:run` desde la ventana Maven. También puedes hacerlo desde PowerShell, en la carpeta del proyecto:
+## Ejecutar en escritorio
 
-```powershell
-mvn javafx:run
-```
-
-La ventana principal de Reggis permite registrar un cliente o abrir la lista de clientes. En la lista, haz doble clic sobre un cliente para consultar sus pedidos; también puedes seleccionarlo y usar **Ver pedidos**. En la ficha del cliente puedes crear pedidos, registrar pagos, revisar el historial y exportar reportes `.xls`. La acción **Eliminar cliente** está disponible únicamente en esa ficha y conserva el historial del cliente.
-
-## Datos locales
-
-SQLite crea la base de datos en `%LOCALAPPDATA%\ReggisApp\reggisapp.db`; si Windows no define esa variable, utiliza `~/.reggisapp/reggisapp.db`. La carpeta de datos conserva el nombre técnico anterior para mantener las bases de datos locales existentes. El archivo no se guarda dentro de la instalación de Reggis.
-
-Antes de reinstalar o mover el programa, conserva una copia de ese archivo. Las versiones del esquema se controlan con `PRAGMA user_version`.
-
-## Pruebas
-
-Ejecuta la suite con:
+Necesitas JDK 25 y Maven 3.9 o el Maven incluido en IntelliJ IDEA.
 
 ```powershell
 mvn clean verify
+mvn javafx:run
 ```
 
-JUnit y Mockito cubren las reglas de clientes, pedidos, pagos, conversión y tiempo. Las pruebas de interfaz verifican botones, navegación y carga de clientes. Las pruebas SQLite revisan persistencia, transacciones y entradas de inyección SQL. Las pruebas del exportador abren los archivos `.xls` generados y comprueban sus datos.
-
-## Generar el instalador `.exe`
-
-Desde PowerShell, en la raíz del proyecto:
+Para generar el instalador Windows necesitas WiX Toolset:
 
 ```powershell
 ./scripts/crear-instalador-windows.ps1
 ```
 
-Se genera `dist/Reggis-1.1.1.exe` con el icono de la aplicación (una “R” blanca sobre fondo azul). El equipo que lo construya necesita JDK 25, Maven y WiX Toolset. La guía de [instalación y versionado](docs/instalador-y-versiones.md) describe la actualización de versiones.
+## Ejecutar en Android
 
-## Estructura y diseño
+Abre `android/` en Android Studio y configura el SDK 36. La aplicación admite Android 8.0 (API 26) o posterior.
 
-El código separa presentación (`ui`), casos de uso (`domain.service`), modelos (`domain.model`) y persistencia (`repository`). `AppServices` compone SQLite, repositorios y servicios. Los importes se calculan con `BigDecimal`; los repositorios usan sentencias parametrizadas. Consulta la [arquitectura](docs/arquitectura.md), la [estructura del proyecto](docs/estructura.md) y el [registro de cambios](CHANGELOG.md) para ver las reglas, responsabilidades e historia de versiones.
+```powershell
+cd android
+.\gradlew.bat :core:test :reports:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+```
 
-La versión 1.0 incluye la gestión local de clientes, pedidos, pagos, historial y reportes individuales `.xls`. Los reportes mensuales y la actualización automática de la aplicación están previstos para futuras versiones.
+Consulta la [guía de Android](android/README.md) para instalación, pruebas en dispositivos y firma del APK.
+
+## Arquitectura
+
+El dominio contiene las reglas de negocio y depende de contratos de repositorio, no de JavaFX, Android o JDBC. Cada plataforma proporciona sus adaptadores de persistencia e interfaz. Los servicios coordinan las operaciones transaccionales; los importes usan `BigDecimal` y las consultas parametrizadas separan los datos del SQL.
+
+| Directorio | Responsabilidad |
+| --- | --- |
+| `src/` | Dominio compartido, escritorio JavaFX, SQLite JDBC y pruebas Maven |
+| `android/` | Interfaz Compose, almacenamiento Android y pruebas móviles |
+| `core/` | Módulo Gradle que reutiliza los modelos, servicios y contratos Java |
+| `reporting/` | Módulo Gradle del exportador Excel con Apache POI |
+| `docs/` | Arquitectura, estructura y publicación |
+
+## Datos y límites
+
+En Windows, la base se guarda en `%LOCALAPPDATA%\ReggisApp\reggisapp.db` (alternativa: `~/.reggisapp/reggisapp.db`). Cierra la aplicación antes de hacer una copia. En Android, los datos quedan en almacenamiento privado; borrar los datos de la app o desinstalarla elimina los registros. Los Excel no son copias restaurables de la base.
+
+Reggis no proporciona cifrado adicional, autenticación propia, tasa de cambio automática, sincronización ni actualización automática. La beta Android debe validarse en el dispositivo de destino antes de confiarle datos reales.
+
+## Documentación
+
+- [Arquitectura y reglas de negocio](docs/arquitectura.md)
+- [Estructura del proyecto](docs/estructura.md)
+- [Instalador y versionado](docs/instalador-y-versiones.md)
+- [Núcleo compartido](core/README.md)
+- [Historial de cambios](CHANGELOG.md)

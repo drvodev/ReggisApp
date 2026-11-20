@@ -29,7 +29,7 @@ El script compila el JAR y sus dependencias de ejecución, y llama a `jpackage`.
 
 ## Versiones siguientes
 
-Actualiza `<version>` en `pom.xml` para cada publicación. Usa `1.1.1` para una ampliación compatible y `2.0.0` para un cambio mayor. Conserva el valor `--win-upgrade-uuid` del script entre publicaciones para que Windows reconozca cada instalador como una actualización de la misma aplicación.
+Actualiza `<version>` en `pom.xml` para cada publicación. Usa `1.1.2` para una corrección compatible, `1.2.0` para una ampliación compatible y `2.0.0` para un cambio incompatible. Conserva el valor `--win-upgrade-uuid` del script entre publicaciones para que Windows reconozca cada instalador como una actualización de la misma aplicación.
 
 La versión afecta el nombre del archivo `.exe`; para futuras publicaciones puede añadirse una etiqueta Git, por ejemplo `v1.0.0`, y adjuntar el instalador al lanzamiento correspondiente.
 
@@ -42,3 +42,7 @@ La base SQLite permanece en `%LOCALAPPDATA%\ReggisApp\reggisapp.db`, fuera de la
 ## Actualización automática
 
 El instalador permite publicar e instalar versiones nuevas manualmente; no descarga actualizaciones por sí solo. Una actualización automática requeriría un servicio de publicación y un proceso futuro para comprobar, descargar y verificar versiones.
+
+## Android
+
+Android tiene su propio ciclo de publicación (`versionName` y `versionCode` en `android/app/build.gradle`). Consulta la [guía móvil](../android/README.md) para generar el APK y conservar la firma entre actualizaciones. No publiques claves privadas, propiedades de firma, bases de datos ni exportaciones de clientes.

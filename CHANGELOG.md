@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## En desarrollo — Android 0.1.0 beta
+
+- Interfaz móvil con Jetpack Compose y SQLite independiente, compatible con Android 8.0 o posterior.
+- Reutilización del dominio Java y del exportador Excel mediante módulos Gradle.
+- Pruebas móviles de clientes, pedidos, marcas, abonos, anulaciones y reportes.
+- Conversión monetaria coherente con el importe original redondeado y rechazo de importes inferiores a un centavo contable.
+- Documentación para ambas plataformas. La beta no sustituye la versión de escritorio 1.1.1.
+
 ## 1.1.1 — 2026-10-29
 
 - Se pueden retirar marcas del catálogo conservando su historial y reactivarlas al agregarlas nuevamente.

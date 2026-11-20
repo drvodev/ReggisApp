@@ -1,0 +1,41 @@
+plugins { id 'java-library' }
+
+// One canonical source tree, also compiled by the existing Maven desktop build.
+sourceSets {
+    main.java {
+        srcDirs = ['../src/main/java']
+        include 'org/drvo/reggisapp/domain/**'
+        include 'org/drvo/reggisapp/repository/*Repository.java'
+        exclude 'org/drvo/reggisapp/repository/AbstractJdbcRepository.java'
+        include 'org/drvo/reggisapp/report/ReportePedido.java'
+        include 'org/drvo/reggisapp/report/ExcelReportExporter.java'
+    }
+    test.java {
+        srcDirs = ['../src/test/java']
+        include 'org/drvo/reggisapp/domain/**'
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+    options.encoding = 'UTF-8'
+}
+
+configurations { mockitoAgent }
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.0.3'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.20.0'
+    mockitoAgent('org.mockito:mockito-core:5.20.0') { transitive = false }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    // Avoid runtime self-attachment, which can hang on restricted Windows setups.
+    jvmArgs "-javaagent:${configurations.mockitoAgent.singleFile}"
+    testLogging { events 'passed', 'skipped', 'failed' }
+}

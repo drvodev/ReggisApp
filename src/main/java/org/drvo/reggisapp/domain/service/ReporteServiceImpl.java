@@ -5,6 +5,8 @@ import org.drvo.reggisapp.domain.model.Cliente;
 import org.drvo.reggisapp.repository.ClienteRepository;
 
 import java.util.List;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import java.util.Objects;
 
 public class ReporteServiceImpl implements ReporteService {
@@ -22,6 +24,6 @@ public class ReporteServiceImpl implements ReporteService {
         return clienteIds.stream().distinct()
                 .map(id -> clienteRepository.buscarPorId(id)
                         .orElseThrow(() -> new ReglaNegocioException("No se encontró el cliente " + id + ".")))
-                .toList();
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 }

@@ -11,6 +11,8 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import java.util.Objects;
 
 public class TiempoServiceImpl implements TiempoService {
@@ -21,7 +23,7 @@ public class TiempoServiceImpl implements TiempoService {
 
         List<Pago> ordenados = pagos.stream()
                 .sorted(Comparator.comparing(Pago::getFechaPago))
-                .toList();
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
         LocalDate fechaAnterior = pedido.getFechaCreacion();
         long sumaDias = 0;
         long intervalos = 0;

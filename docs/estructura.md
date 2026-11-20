@@ -1,5 +1,7 @@
 # Estructura del proyecto
 
+La aplicación Android se incorpora mediante un proyecto Gradle independiente en `android/`. Los módulos `core/` y `reporting/` reutilizan directamente las fuentes de `src/`; no duplican los modelos ni servicios. `android/app/` contiene la interfaz Compose y los adaptadores SQLite nativos.
+
 Reggis sigue la estructura estándar de Maven. El nombre que ve el usuario es Reggis; el artefacto Maven, el paquete Java y la carpeta de la base local conservan `ReggisApp` para mantener compatibilidad con el proyecto y los datos existentes.
 
 ```text

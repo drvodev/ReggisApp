@@ -22,6 +22,8 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -210,7 +212,7 @@ public class CobranzaServiceImpl implements CobranzaService {
     public List<Pedido> listarPedidos(Long clienteId, EstadoPedido estado) {
         validarId(clienteId, "cliente");
         List<Pedido> pedidos = pedidoRepository.listarPorCliente(clienteId);
-        return estado == null ? pedidos : pedidos.stream().filter(p -> p.getEstado() == estado).toList();
+        return estado == null ? pedidos : pedidos.stream().filter(p -> p.getEstado() == estado).collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 
     @Override
